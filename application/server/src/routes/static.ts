@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "path";
 
-import history from "connect-history-api-fallback";
 import { Router } from "express";
 import serveStatic from "serve-static";
 
@@ -64,11 +63,9 @@ function setStaticCacheHeaders(
   res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
 }
 
-// SPA 対応のため、ファイルが存在しないときに index.html を返す
-staticRouter.use(history());
-
 staticRouter.get(/.*/, async (req, res, next) => {
-  if (path.extname(req.path) !== "") {
+  const isHtmlEntryRequest = req.path === "/index.html";
+  if (!isHtmlEntryRequest && path.extname(req.path) !== "") {
     return next();
   }
 

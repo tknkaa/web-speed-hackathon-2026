@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { Timeline } from "@web-speed-hackathon-2026/client/src/components/timeline/Timeline";
@@ -7,7 +6,6 @@ import {
   parseSearchQuery,
   sanitizeSearchText,
 } from "@web-speed-hackathon-2026/client/src/search/services";
-import { SearchFormData } from "@web-speed-hackathon-2026/client/src/search/types";
 import { validate, SearchFormErrors } from "@web-speed-hackathon-2026/client/src/search/validation";
 import { fetchJSON } from "@web-speed-hackathon-2026/client/src/utils/fetchers";
 
@@ -47,12 +45,12 @@ export const SearchPage = ({ query, results }: Props) => {
   const navigate = useNavigate();
   const [isNegative, setIsNegative] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const { watch, setValue } = useForm<SearchFormData>({
-    defaultValues: {
-      searchText: query,
-    },
-  });
-  const searchText = watch("searchText") ?? "";
+  const [searchText, setSearchText] = useState(query);
+
+  useEffect(() => {
+    setSearchText(query);
+    setError(undefined);
+  }, [query]);
 
   const parsed = parseSearchQuery(query);
 
@@ -119,7 +117,7 @@ export const SearchPage = ({ query, results }: Props) => {
             <SearchInput
               value={searchText}
               onChange={(value) => {
-                setValue("searchText", value);
+                setSearchText(value);
                 setError(undefined);
               }}
               error={error}
