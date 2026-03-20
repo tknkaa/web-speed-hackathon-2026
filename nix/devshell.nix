@@ -12,6 +12,7 @@ pkgs.mkShell {
     nodejs_24
     google-chrome
     libwebp
+    ffmpeg
   ];
 
   # Add environment variables
