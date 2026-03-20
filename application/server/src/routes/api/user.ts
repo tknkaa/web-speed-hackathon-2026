@@ -5,6 +5,28 @@ import { Post, User } from "@web-speed-hackathon-2026/server/src/models";
 
 export const userRouter = Router();
 
+function parseNumberQuery(value: unknown): number | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function parsePagination(query: Record<string, unknown>): {
+  limit: number;
+  offset: number;
+} {
+  const limit = parseNumberQuery(query["limit"]);
+  const offset = parseNumberQuery(query["offset"]);
+
+  return {
+    limit: Math.min(Math.max(limit ?? 20, 1), 50),
+    offset: Math.max(offset ?? 0, 0),
+  };
+}
+
 userRouter.get("/me", async (req, res) => {
   if (req.session.userId === undefined) {
     throw new httpErrors.Unauthorized();
@@ -59,9 +81,11 @@ userRouter.get("/users/:username/posts", async (req, res) => {
     throw new httpErrors.NotFound();
   }
 
+  const { limit, offset } = parsePagination(req.query as Record<string, unknown>);
+
   const posts = await Post.findAll({
-    limit: req.query["limit"] != null ? Number(req.query["limit"]) : undefined,
-    offset: req.query["offset"] != null ? Number(req.query["offset"]) : undefined,
+    limit,
+    offset,
     where: {
       userId: user.id,
     },

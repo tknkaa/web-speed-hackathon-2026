@@ -1,14 +1,5 @@
 import classNames from "classnames";
-import {
-  ChangeEvent,
-  useCallback,
-  useId,
-  useRef,
-  useState,
-  KeyboardEvent,
-  FormEvent,
-  useEffect,
-} from "react";
+import { ChangeEvent, useCallback, useId, useRef, useState, KeyboardEvent, FormEvent } from "react";
 
 import { FontAwesomeIcon } from "@web-speed-hackathon-2026/client/src/components/foundation/FontAwesomeIcon";
 import { DirectMessageFormData } from "@web-speed-hackathon-2026/client/src/direct_message/types";
@@ -43,7 +34,6 @@ export const DirectMessagePage = ({
   const [text, setText] = useState("");
   const textAreaRows = Math.min((text || "").split("\n").length, 5);
   const isInvalid = text.trim().length === 0;
-  const scrollHeightRef = useRef(0);
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -68,22 +58,13 @@ export const DirectMessagePage = ({
       event.preventDefault();
       void onSubmit({ body: text.trim() }).then(() => {
         setText("");
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        });
       });
     },
     [onSubmit, text],
   );
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      const height = Number(window.getComputedStyle(document.body).height.replace("px", ""));
-      if (height !== scrollHeightRef.current) {
-        scrollHeightRef.current = height;
-        window.scrollTo(0, height);
-      }
-    }, 1);
-
-    return () => clearInterval(id);
-  }, []);
 
   if (conversationError != null) {
     return (
@@ -99,6 +80,8 @@ export const DirectMessagePage = ({
         <img
           alt={peer.profileImage.alt}
           className="h-12 w-12 rounded-full object-cover"
+          decoding="async"
+          loading="lazy"
           src={getProfileImagePath(peer.profileImage.id)}
         />
         <div className="min-w-0">

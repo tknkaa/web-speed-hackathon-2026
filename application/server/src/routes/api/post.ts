@@ -5,10 +5,34 @@ import { Comment, Post } from "@web-speed-hackathon-2026/server/src/models";
 
 export const postRouter = Router();
 
+function parseNumberQuery(value: unknown): number | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function parsePagination(req: { query: Record<string, unknown> }): {
+  limit: number;
+  offset: number;
+} {
+  const limit = parseNumberQuery(req.query["limit"]);
+  const offset = parseNumberQuery(req.query["offset"]);
+
+  return {
+    limit: Math.min(Math.max(limit ?? 20, 1), 50),
+    offset: Math.max(offset ?? 0, 0),
+  };
+}
+
 postRouter.get("/posts", async (req, res) => {
+  const { limit, offset } = parsePagination(req as unknown as { query: Record<string, unknown> });
+
   const posts = await Post.findAll({
-    limit: req.query["limit"] != null ? Number(req.query["limit"]) : undefined,
-    offset: req.query["offset"] != null ? Number(req.query["offset"]) : undefined,
+    limit,
+    offset,
   });
 
   return res.status(200).type("application/json").send(posts);
@@ -25,9 +49,11 @@ postRouter.get("/posts/:postId", async (req, res) => {
 });
 
 postRouter.get("/posts/:postId/comments", async (req, res) => {
+  const { limit, offset } = parsePagination(req as unknown as { query: Record<string, unknown> });
+
   const posts = await Comment.findAll({
-    limit: req.query["limit"] != null ? Number(req.query["limit"]) : undefined,
-    offset: req.query["offset"] != null ? Number(req.query["offset"]) : undefined,
+    limit,
+    offset,
     where: {
       postId: req.params.postId,
     },

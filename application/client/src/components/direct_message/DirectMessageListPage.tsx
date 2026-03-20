@@ -86,7 +86,9 @@ export const DirectMessageListPage = ({ activeUser, newDmModalId }: Props) => {
                   <div className="border-cax-border flex gap-4 border-b px-4 pt-2 pb-4">
                     <img
                       alt={peer.profileImage.alt}
-                      className="w-12 shrink-0 self-start rounded-full"
+                      className="h-12 w-12 shrink-0 self-start rounded-full object-cover"
+                      decoding="async"
+                      loading="lazy"
                       src={getProfileImagePath(peer.profileImage.id)}
                     />
                     <div className="flex flex-1 flex-col">

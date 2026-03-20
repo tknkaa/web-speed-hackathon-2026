@@ -72,6 +72,8 @@ export const CoveredImage = ({ src }: Props) => {
             "w-full h-auto": containerRatio <= imageRatio,
           },
         )}
+        loading="lazy"
+        decoding="async"
         src={blobUrl}
       />
 

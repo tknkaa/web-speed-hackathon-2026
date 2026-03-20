@@ -6,6 +6,28 @@ import { parseSearchQuery } from "@web-speed-hackathon-2026/server/src/utils/par
 
 export const searchRouter = Router();
 
+function parseNumberQuery(value: unknown): number | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function parsePagination(query: Record<string, unknown>): {
+  limit: number;
+  offset: number;
+} {
+  const limit = parseNumberQuery(query["limit"]);
+  const offset = parseNumberQuery(query["offset"]);
+
+  return {
+    limit: Math.min(Math.max(limit ?? 20, 1), 50),
+    offset: Math.max(offset ?? 0, 0),
+  };
+}
+
 const NEGATIVE_TERMS = [
   "つらい",
   "辛い",
@@ -68,8 +90,7 @@ searchRouter.get("/search", async (req, res) => {
   }
 
   const searchTerm = keywords ? `%${keywords}%` : null;
-  const limit = req.query["limit"] != null ? Number(req.query["limit"]) : undefined;
-  const offset = req.query["offset"] != null ? Number(req.query["offset"]) : undefined;
+  const { limit, offset } = parsePagination(req.query as Record<string, unknown>);
 
   // 日付条件を構築
   const dateConditions: Record<symbol, Date>[] = [];
@@ -133,7 +154,7 @@ searchRouter.get("/search", async (req, res) => {
 
   mergedPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-  const result = mergedPosts.slice(offset || 0, (offset || 0) + (limit || mergedPosts.length));
+  const result = mergedPosts.slice(offset, offset + limit);
 
   return res.status(200).type("application/json").send(result);
 });
