@@ -3,11 +3,12 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
+    nixpkgs-playwright.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs =
-    { self, nixpkgs, flake-utils }:
+    { self, nixpkgs, nixpkgs-playwright, flake-utils }:
     {
       templates.default = {
         path = ./.;
@@ -15,10 +16,14 @@
       };
     } // flake-utils.lib.eachDefaultSystem (system:
     let
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      inputs = { inherit nixpkgs-playwright; };
     in
     {
-      devShells.default = import ./nix/devshell.nix { inherit pkgs; };
+      devShells.default = import ./nix/devshell.nix { inherit pkgs inputs; };
       formatter = pkgs.nixpkgs-fmt;
     });
 }
