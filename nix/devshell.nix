@@ -11,6 +11,7 @@ pkgs.mkShell {
     pnpm_10
     nodejs_24
     google-chrome
+    libwebp
   ];
 
   # Add environment variables
