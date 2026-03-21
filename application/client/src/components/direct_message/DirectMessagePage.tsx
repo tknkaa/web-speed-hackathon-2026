@@ -83,12 +83,15 @@ export const DirectMessagePage = ({
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (isSubmitting) {
+        return;
+      }
       const currentText = text;
       void onSubmit({ body: currentText.trim() }).then(() => {
         setText((latestText) => (latestText === currentText ? "" : latestText));
       });
     },
-    [onSubmit, text],
+    [isSubmitting, onSubmit, text],
   );
 
   if (conversationError != null) {

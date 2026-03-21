@@ -32,7 +32,9 @@ export const CrokContainer = ({ activeUser, authModalId }: Props) => {
     [],
   );
 
-  const { contentRef, isStreaming, start } = useSSE<Models.SSEChunk>(sseOptions);
+  const { contentRef, isLoadingIndicatorVisible, isStreaming, start } = useSSE<Models.SSEChunk>(
+    sseOptions,
+  );
 
   const sendMessage = useCallback(
     (userInput: string) => {
@@ -67,6 +69,7 @@ export const CrokContainer = ({ activeUser, authModalId }: Props) => {
         <title>Crok - CaX</title>
       </Helmet>
       <CrokPage
+        isLoadingIndicatorVisible={isLoadingIndicatorVisible}
         isStreaming={isStreaming}
         messages={messages}
         onSendMessage={sendMessage}

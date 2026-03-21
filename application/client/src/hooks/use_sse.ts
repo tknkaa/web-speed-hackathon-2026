@@ -8,23 +8,34 @@ interface SSEOptions<T> {
 
 interface ReturnValues {
   isStreaming: boolean;
+  isLoadingIndicatorVisible: boolean;
   start: (url: string) => void;
   stop: () => void;
   reset: () => void;
   contentRef: RefObject<string>;
 }
 
+// SSEが極端に短時間で完了した場合でも、ローディング表示を視認できる最小表示時間
+const MIN_LOADING_INDICATOR_MS = 300;
+
 export function useSSE<T>(options: SSEOptions<T>): ReturnValues {
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isLoadingIndicatorVisible, setIsLoadingIndicatorVisible] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const contentRef = useRef("");
+  const streamStartedAtRef = useRef(0);
 
   const stop = useCallback(() => {
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
-    setIsStreaming(false);
+    const elapsed = Date.now() - streamStartedAtRef.current;
+    const waitMs = Math.max(0, MIN_LOADING_INDICATOR_MS - elapsed);
+    window.setTimeout(() => {
+      setIsStreaming(false);
+      setIsLoadingIndicatorVisible(false);
+    }, waitMs);
   }, []);
 
   const reset = useCallback(() => {
@@ -36,7 +47,9 @@ export function useSSE<T>(options: SSEOptions<T>): ReturnValues {
     (url: string) => {
       stop();
       contentRef.current = "";
+      streamStartedAtRef.current = Date.now();
       setIsStreaming(true);
+      setIsLoadingIndicatorVisible(true);
 
       const eventSource = new EventSource(url);
       eventSourceRef.current = eventSource;
@@ -63,5 +76,5 @@ export function useSSE<T>(options: SSEOptions<T>): ReturnValues {
     [options, stop],
   );
 
-  return { contentRef, isStreaming, start, stop, reset };
+  return { contentRef, isLoadingIndicatorVisible, isStreaming, start, stop, reset };
 }

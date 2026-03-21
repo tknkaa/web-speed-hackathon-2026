@@ -8,12 +8,19 @@ import { useHasContentBelow } from "@web-speed-hackathon-2026/client/src/hooks/u
 
 interface Props {
   messages: Models.ChatMessage[];
+  isLoadingIndicatorVisible: boolean;
   isStreaming: boolean;
   onSendMessage: (message: string) => void;
   streamingContentRef: RefObject<string>;
 }
 
-export const CrokPage = ({ messages, isStreaming, onSendMessage, streamingContentRef }: Props) => {
+export const CrokPage = ({
+  messages,
+  isLoadingIndicatorVisible,
+  isStreaming,
+  onSendMessage,
+  streamingContentRef,
+}: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const stickyBarRef = useRef<HTMLDivElement>(null);
   const showScrollButton = useHasContentBelow(messagesEndRef, stickyBarRef);
@@ -35,6 +42,7 @@ export const CrokPage = ({ messages, isStreaming, onSendMessage, streamingConten
               streaming={
                 isStreaming && message.role === "assistant" && index === messages.length - 1
               }
+              forceShowTypingIndicator={isLoadingIndicatorVisible}
               streamingContentRef={streamingContentRef}
             />
           ))}
