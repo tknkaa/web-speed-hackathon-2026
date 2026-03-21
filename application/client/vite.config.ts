@@ -10,7 +10,6 @@ export default defineConfig({
   build: {
     outDir: "../../dist",
     emptyOutDir: true,
-    modulePreload: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
