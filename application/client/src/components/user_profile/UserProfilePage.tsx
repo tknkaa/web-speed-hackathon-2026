@@ -11,7 +11,7 @@ export const UserProfilePage = ({ timeline, user }: Props) => {
     <>
       <UserProfileHeader user={user} />
       <div className="border-cax-border mt-6 border-t">
-        <Timeline timeline={timeline} />
+        <Timeline eagerAvatarOnFirstItem timeline={timeline} />
       </div>
     </>
   );
