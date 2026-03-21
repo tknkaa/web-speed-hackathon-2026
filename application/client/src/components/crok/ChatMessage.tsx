@@ -11,6 +11,7 @@ import { TypingIndicator } from "@web-speed-hackathon-2026/client/src/components
 import { CrokLogo } from "@web-speed-hackathon-2026/client/src/components/foundation/CrokLogo";
 
 interface Props {
+  forceShowTypingIndicator: boolean;
   message: Models.ChatMessage;
   streaming: boolean;
   streamingContentRef: RefObject<string>;
@@ -28,10 +29,12 @@ const UserMessage = ({ content }: { content: string }) => {
 
 const AssistantMessage = ({
   content,
+  forceShowTypingIndicator,
   streaming,
   streamingContentRef,
 }: {
   content: string;
+  forceShowTypingIndicator: boolean;
   streaming: boolean;
   streamingContentRef: RefObject<string>;
 }) => {
@@ -73,7 +76,7 @@ const AssistantMessage = ({
         <div className="markdown text-cax-text max-w-none">
           {streaming ? (
             <>
-              {!hasStreamingContent && <TypingIndicator />}
+              {(forceShowTypingIndicator || !hasStreamingContent) && <TypingIndicator />}
               <pre
                 ref={streamingTextRef}
                 className={!hasStreamingContent ? "whitespace-pre-wrap hidden" : "whitespace-pre-wrap"}
@@ -98,13 +101,19 @@ const AssistantMessage = ({
   );
 };
 
-export const ChatMessage = ({ message, streaming, streamingContentRef }: Props) => {
+export const ChatMessage = ({
+  forceShowTypingIndicator,
+  message,
+  streaming,
+  streamingContentRef,
+}: Props) => {
   if (message.role === "user") {
     return <UserMessage content={message.content} />;
   }
   return (
     <AssistantMessage
       content={message.content}
+      forceShowTypingIndicator={forceShowTypingIndicator}
       streaming={streaming}
       streamingContentRef={streamingContentRef}
     />

@@ -83,12 +83,15 @@ export const DirectMessagePage = ({
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (isSubmitting) {
+        return;
+      }
       const currentText = text;
       void onSubmit({ body: currentText.trim() }).then(() => {
         setText((latestText) => (latestText === currentText ? "" : latestText));
       });
     },
-    [onSubmit, text],
+    [isSubmitting, onSubmit, text],
   );
 
   if (conversationError != null) {
@@ -106,7 +109,7 @@ export const DirectMessagePage = ({
           alt={peer.profileImage.alt}
           className="h-12 w-12 rounded-full object-cover"
           decoding="async"
-          loading="lazy"
+          loading="eager"
           src={getProfileImagePath(peer.profileImage.id)}
         />
         <div className="min-w-0">

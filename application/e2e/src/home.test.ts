@@ -50,6 +50,12 @@ test.describe("ホーム", () => {
     expect(position).toBe("absolute");
   });
 
+  test("最初のタイムライン画像は遅延読み込みされない", async ({ page }) => {
+    const firstImage = page.locator("main article img").first();
+    await expect(firstImage).toBeVisible({ timeout: 30_000 });
+    await expect(firstImage).toHaveAttribute("loading", "eager");
+  });
+
   test("投稿クリック → 投稿詳細に遷移する", async ({ page }) => {
     const firstArticle = page.locator("article").first();
     await expect(firstArticle).toBeVisible({ timeout: 30_000 });

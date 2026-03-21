@@ -27,10 +27,11 @@ const isClickedAnchorOrButton = (target: EventTarget | null, currentTarget: Elem
  * @property {Models.Post} post
  */
 interface Props {
+  eagerAvatar?: boolean;
   post: Models.Post;
 }
 
-export const TimelineItem = memo(({ post }: Props) => {
+export const TimelineItem = memo(({ eagerAvatar = false, post }: Props) => {
   const navigate = useNavigate();
 
   /**
@@ -58,7 +59,7 @@ export const TimelineItem = memo(({ post }: Props) => {
               alt={post.user.profileImage.alt}
               className="h-full w-full object-cover"
               decoding="async"
-              loading="lazy"
+              loading={eagerAvatar ? "eager" : "lazy"}
               src={getProfileImagePath(post.user.profileImage.id)}
             />
           </Link>
