@@ -14,6 +14,8 @@ import { soundRouter } from "@web-speed-hackathon-2026/server/src/routes/api/sou
 import { userRouter } from "@web-speed-hackathon-2026/server/src/routes/api/user";
 
 export const apiRouter = Router();
+const CACHEABLE_POSTS_PATH_PATTERN = /^\/posts(\/[^/]+(\/comments)?)?$/;
+const CACHEABLE_USER_PATH_PATTERN = /^\/users\/[^/]+(\/posts)?$/;
 
 apiRouter.use((_req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
@@ -26,8 +28,8 @@ apiRouter.use((req, res, next) => {
   }
 
   if (
-    req.path.startsWith("/posts") ||
-    /^\/users\/[^/]+(\/posts)?$/.test(req.path) ||
+    CACHEABLE_POSTS_PATH_PATTERN.test(req.path) ||
+    CACHEABLE_USER_PATH_PATTERN.test(req.path) ||
     req.path === "/search" ||
     req.path === "/search/sentiment" ||
     req.path === "/crok/suggestions"

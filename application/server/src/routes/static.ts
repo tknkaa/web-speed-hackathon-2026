@@ -43,6 +43,7 @@ const IMMUTABLE_EXTENSIONS = new Set([
   ".otf",
   ".eot",
 ]);
+const HASHED_FILE_NAME_PATTERN = /-[a-z0-9]{6,}\./i;
 
 function setStaticCacheHeaders(
   res: Parameters<NonNullable<serveStatic.ServeStaticOptions["setHeaders"]>>[0],
@@ -50,7 +51,7 @@ function setStaticCacheHeaders(
 ): void {
   const fileName = path.basename(filePath);
   const extension = path.extname(filePath).toLowerCase();
-  const hasContentHash = /-[a-z0-9]{6,}\./i.test(fileName);
+  const hasContentHash = HASHED_FILE_NAME_PATTERN.test(fileName);
 
   if (extension === ".html") {
     res.setHeader("Cache-Control", "no-cache");
