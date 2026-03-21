@@ -27,6 +27,16 @@ test.describe("ホーム", () => {
     await expect(page).toHaveTitle("タイムライン - CaX", { timeout: 30_000 });
   });
 
+  test("タイムライン投稿が重複表示されない", async ({ page }) => {
+    const articles = page.locator("main article");
+    await expect(articles.first()).toBeVisible({ timeout: 30_000 });
+
+    const postLinks = await page
+      .locator('main article a[href^="/posts/"]')
+      .evaluateAll((links) => links.map((link) => link.getAttribute("href") ?? ""));
+    expect(new Set(postLinks).size).toBe(postLinks.length);
+  });
+
   test("動画が自動再生される", async ({ page }) => {
     const videoPlayer = page.locator('article button[aria-label="動画プレイヤー"]').first();
 
