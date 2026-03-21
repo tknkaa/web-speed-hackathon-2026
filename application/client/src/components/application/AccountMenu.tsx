@@ -12,7 +12,7 @@ export const AccountMenu = ({ user, onLogout }: Props) => {
 
   return (
     <div
-      className="relative hidden lg:block lg:w-full lg:pb-2"
+      className="relative w-full pb-2"
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) {
           setOpen(false);
