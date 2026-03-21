@@ -25,4 +25,12 @@ test.describe("ユーザー詳細", () => {
       mask: dynamicMediaMask(page),
     });
   });
+
+  test("ユーザー詳細の最初の画像は遅延読み込みされない", async ({ page }) => {
+    await page.goto("/users/o6yq16leo");
+
+    const firstImage = page.locator("main img").first();
+    await expect(firstImage).toBeVisible({ timeout: 30_000 });
+    await expect(firstImage).toHaveAttribute("loading", "eager");
+  });
 });

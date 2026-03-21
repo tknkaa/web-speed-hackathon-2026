@@ -43,12 +43,15 @@ const IMMUTABLE_EXTENSIONS = new Set([
   ".otf",
   ".eot",
 ]);
+const HASHED_FILE_NAME_PATTERN = /-[a-z0-9]{6,}\./i;
 
 function setStaticCacheHeaders(
   res: Parameters<NonNullable<serveStatic.ServeStaticOptions["setHeaders"]>>[0],
   filePath: string,
 ): void {
+  const fileName = path.basename(filePath);
   const extension = path.extname(filePath).toLowerCase();
+  const hasContentHash = HASHED_FILE_NAME_PATTERN.test(fileName);
 
   if (extension === ".html") {
     res.setHeader("Cache-Control", "no-cache");
@@ -56,11 +59,16 @@ function setStaticCacheHeaders(
   }
 
   if (IMMUTABLE_EXTENSIONS.has(extension)) {
-    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    if (hasContentHash) {
+      res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
+      return;
+    }
+
+    res.setHeader("Cache-Control", "public, max-age=86400");
     return;
   }
 
-  res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+  res.setHeader("Cache-Control", "public, max-age=86400");
 }
 
 staticRouter.get(/.*/, async (req, res, next) => {

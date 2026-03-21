@@ -6,6 +6,7 @@ import { ModalErrorMessage } from "@web-speed-hackathon-2026/client/src/componen
 import { ModalSubmitButton } from "@web-speed-hackathon-2026/client/src/components/modal/ModalSubmitButton";
 import { NewDirectMessageFormData } from "@web-speed-hackathon-2026/client/src/direct_message/types";
 import { validate } from "@web-speed-hackathon-2026/client/src/direct_message/validation";
+import { closeModalById } from "@web-speed-hackathon-2026/client/src/utils/modal";
 
 interface Props {
   id: string;
@@ -69,7 +70,12 @@ export const NewDirectMessageModalPage = ({ id, onSubmit }: Props) => {
           <ModalSubmitButton disabled={submitting || username.trim() === ""} loading={submitting}>
             DMを開始
           </ModalSubmitButton>
-          <Button variant="secondary" command="close" commandfor={id}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              closeModalById(id);
+            }}
+          >
             キャンセル
           </Button>
         </div>

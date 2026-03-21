@@ -7,10 +7,11 @@ import { formatDateJa, toIsoString } from "@web-speed-hackathon-2026/client/src/
 import { getProfileImagePath } from "@web-speed-hackathon-2026/client/src/utils/get_path";
 
 interface Props {
+  eagerAvatar?: boolean;
   post: Models.Post;
 }
 
-export const PostItem = ({ post }: Props) => {
+export const PostItem = ({ eagerAvatar = false, post }: Props) => {
   return (
     <article className="px-1 sm:px-4">
       <div className="border-cax-border border-b px-4 pt-4 pb-4">
@@ -24,7 +25,7 @@ export const PostItem = ({ post }: Props) => {
                 alt={post.user.profileImage.alt}
                 className="h-full w-full object-cover"
                 decoding="async"
-                loading="lazy"
+                loading={eagerAvatar ? "eager" : "lazy"}
                 src={getProfileImagePath(post.user.profileImage.id)}
               />
             </Link>
