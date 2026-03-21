@@ -105,3 +105,5 @@ export const TimelineItem = memo(({ post }: Props) => {
     </article>
   );
 });
+
+TimelineItem.displayName = "TimelineItem";
