@@ -6,7 +6,6 @@ import { AppPage } from "@web-speed-hackathon-2026/client/src/components/applica
 import { AuthModalContainer } from "@web-speed-hackathon-2026/client/src/containers/AuthModalContainer";
 import { DirectMessageContainer } from "@web-speed-hackathon-2026/client/src/containers/DirectMessageContainer";
 import { DirectMessageListContainer } from "@web-speed-hackathon-2026/client/src/containers/DirectMessageListContainer";
-import { NewPostModalContainer } from "@web-speed-hackathon-2026/client/src/containers/NewPostModalContainer";
 import { NotFoundContainer } from "@web-speed-hackathon-2026/client/src/containers/NotFoundContainer";
 import { PostContainer } from "@web-speed-hackathon-2026/client/src/containers/PostContainer";
 import { SearchContainer } from "@web-speed-hackathon-2026/client/src/containers/SearchContainer";
@@ -19,6 +18,13 @@ const CrokContainer = lazy(() =>
   import("@web-speed-hackathon-2026/client/src/containers/CrokContainer").then((module) => ({
     default: module.CrokContainer,
   })),
+);
+const NewPostModalContainer = lazy(() =>
+  import("@web-speed-hackathon-2026/client/src/containers/NewPostModalContainer").then(
+    (module) => ({
+      default: module.NewPostModalContainer,
+    }),
+  ),
 );
 
 export const AppContainer = () => {
@@ -95,7 +101,11 @@ export const AppContainer = () => {
       </AppPage>
 
       <AuthModalContainer id={authModalId} onUpdateActiveUser={setActiveUser} />
-      <NewPostModalContainer id={newPostModalId} />
+      {activeUser !== null ? (
+        <Suspense fallback={null}>
+          <NewPostModalContainer id={newPostModalId} />
+        </Suspense>
+      ) : null}
     </HelmetProvider>
   );
 };
