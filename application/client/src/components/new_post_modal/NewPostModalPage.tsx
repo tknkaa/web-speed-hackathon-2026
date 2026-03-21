@@ -1,4 +1,4 @@
-import type { MagickFormat } from "@imagemagick/magick-wasm";
+import { MagickFormat } from "@imagemagick/magick-wasm";
 import { ChangeEventHandler, FormEventHandler, useCallback, useState } from "react";
 
 import { FontAwesomeIcon } from "@web-speed-hackathon-2026/client/src/components/foundation/FontAwesomeIcon";
@@ -55,8 +55,8 @@ export const NewPostModalPage = ({ id, hasError, isLoading, onResetError, onSubm
 
       Promise.all(
         files.map((file) =>
-          convertImage(file, { extension: "WebP" as MagickFormat }).then(
-            (blob) => new File([blob], "converted.webp", { type: "image/webp" }),
+          convertImage(file, { extension: MagickFormat.Jpg }).then(
+            (blob) => new File([blob], "converted.jpg", { type: "image/jpeg" }),
           ),
         ),
       )
@@ -103,13 +103,13 @@ export const NewPostModalPage = ({ id, hasError, isLoading, onResetError, onSubm
     if (isValid) {
       setIsConverting(true);
 
-      convertMovie(file, { extension: "webm", size: undefined })
+      convertMovie(file, { extension: "gif", size: undefined })
         .then((converted) => {
           setParams((params) => ({
             ...params,
             images: [],
-            movie: new File([converted], "converted.webm", {
-              type: "video/webm",
+            movie: new File([converted], "converted.gif", {
+              type: "image/gif",
             }),
             sound: undefined,
           }));
