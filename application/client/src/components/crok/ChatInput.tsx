@@ -142,7 +142,7 @@ export const ChatInput = ({ isStreaming, onSendMessage }: Props) => {
     setInputValue(value);
     adjustTextareaHeight();
     if (debounceTimerRef.current !== null) {
-      clearTimeout(debounceTimerRef.current);
+      window.clearTimeout(debounceTimerRef.current);
     }
     debounceTimerRef.current = setTimeout(() => {
       void updateSuggestions(value);

@@ -52,10 +52,11 @@ const AssistantMessage = ({
   }, [streaming, streamingContentRef]);
 
   useEffect(() => {
+    if (streaming) return;
     if (streamingTextRef.current) {
       streamingTextRef.current.textContent = content;
     }
-  }, [content]);
+  }, [content, streaming]);
 
   return (
     <div className="mb-6 flex gap-4">
