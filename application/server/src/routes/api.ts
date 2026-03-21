@@ -20,6 +20,24 @@ apiRouter.use((_req, res, next) => {
   return next();
 });
 
+apiRouter.use((req, res, next) => {
+  if (req.method !== "GET") {
+    return next();
+  }
+
+  if (
+    req.path.startsWith("/posts") ||
+    /^\/users\/[^/]+(\/posts)?$/.test(req.path) ||
+    req.path === "/search" ||
+    req.path === "/search/sentiment" ||
+    req.path === "/crok/suggestions"
+  ) {
+    res.setHeader("Cache-Control", "public, max-age=86400");
+  }
+
+  return next();
+});
+
 apiRouter.use(initializeRouter);
 apiRouter.use(userRouter);
 apiRouter.use(postRouter);

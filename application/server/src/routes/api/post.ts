@@ -40,6 +40,32 @@ function toPostListItem(post: Post) {
   };
 }
 
+function toCommentListItem(comment: Comment) {
+  const json = comment.toJSON() as unknown as {
+    createdAt: string;
+    id: string;
+    text: string;
+    user: {
+      id: string;
+      name: string;
+      profileImage: { alt: string; id: string };
+      username: string;
+    };
+  };
+
+  return {
+    createdAt: json.createdAt,
+    id: json.id,
+    text: json.text,
+    user: {
+      id: json.user.id,
+      name: json.user.name,
+      profileImage: { alt: json.user.profileImage.alt, id: json.user.profileImage.id },
+      username: json.user.username,
+    },
+  };
+}
+
 function parseNumberQuery(value: unknown): number | undefined {
   if (typeof value !== "string") {
     return undefined;
@@ -80,7 +106,7 @@ postRouter.get("/posts/:postId", async (req, res) => {
     throw new httpErrors.NotFound();
   }
 
-  return res.status(200).type("application/json").send(post);
+  return res.status(200).type("application/json").send(toPostListItem(post));
 });
 
 postRouter.get("/posts/:postId/comments", async (req, res) => {
@@ -94,7 +120,7 @@ postRouter.get("/posts/:postId/comments", async (req, res) => {
     },
   });
 
-  return res.status(200).type("application/json").send(posts);
+  return res.status(200).type("application/json").send(posts.map(toCommentListItem));
 });
 
 postRouter.post("/posts", async (req, res) => {

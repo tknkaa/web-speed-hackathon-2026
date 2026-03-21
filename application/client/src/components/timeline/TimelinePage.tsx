@@ -5,5 +5,5 @@ interface Props {
 }
 
 export const TimelinePage = ({ timeline }: Props) => {
-  return <Timeline timeline={timeline} />;
+  return <Timeline eagerAvatarOnFirstItem timeline={timeline} />;
 };

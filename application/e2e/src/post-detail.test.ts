@@ -24,6 +24,20 @@ test.describe("投稿詳細", () => {
     });
   });
 
+  test("投稿詳細の最初の画像は遅延読み込みされない", async ({ page }) => {
+    const response = await page.request.get("/api/v1/posts?limit=1");
+    expect(response.ok()).toBe(true);
+    const posts = (await response.json()) as Array<{ id: string }>;
+    const firstPostId = posts[0]?.id;
+    expect(firstPostId).toBeTruthy();
+
+    await page.goto(`/posts/${firstPostId}`);
+
+    const firstImage = page.locator("main article img").first();
+    await expect(firstImage).toBeVisible({ timeout: 30_000 });
+    await expect(firstImage).toHaveAttribute("loading", "eager");
+  });
+
   test("タイトルが「{ユーザー名} さんのつぶやき - CaX」", async ({ page }) => {
     await page.goto("/");
     const firstArticle = page.locator("article").first();
