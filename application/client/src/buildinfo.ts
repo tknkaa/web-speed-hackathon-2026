@@ -3,6 +3,7 @@ declare global {
     BUILD_DATE: string | undefined;
     COMMIT_HASH: string | undefined;
   };
+  var __INITIAL_TIMELINE_POSTS__: Models.Post[] | undefined;
 }
 
 /** @note 競技用サーバーで参照します。可能な限りコード内に含めてください */

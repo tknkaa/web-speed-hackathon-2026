@@ -2,6 +2,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const LIMIT = 30;
 
+function getInitialTimelinePosts<T>(apiPath: string): T[] | null {
+  if (apiPath !== "/api/v1/posts") {
+    return null;
+  }
+
+  const initialPosts = window.__INITIAL_TIMELINE_POSTS__;
+  if (!Array.isArray(initialPosts)) {
+    return null;
+  }
+
+  const consumedPosts = initialPosts as unknown as T[];
+  window.__INITIAL_TIMELINE_POSTS__ = undefined;
+  return consumedPosts;
+}
+
 interface ReturnValues<T> {
   data: Array<T>;
   error: Error | null;
@@ -13,12 +28,18 @@ export function useInfiniteFetch<T>(
   apiPath: string,
   fetcher: (apiPath: string) => Promise<T[]>,
 ): ReturnValues<T> {
-  const internalRef = useRef({ hasMore: true, isLoading: false, offset: 0 });
+  const initialDataRef = useRef<T[] | null>(getInitialTimelinePosts<T>(apiPath));
+  const hasInitializedRef = useRef(false);
+  const internalRef = useRef({
+    hasMore: apiPath !== "" && (initialDataRef.current?.length ?? 0) >= LIMIT,
+    isLoading: false,
+    offset: initialDataRef.current?.length ?? 0,
+  });
 
   const [result, setResult] = useState<Omit<ReturnValues<T>, "fetchMore">>({
-    data: [],
+    data: initialDataRef.current ?? [],
     error: null,
-    isLoading: true,
+    isLoading: apiPath !== "" && initialDataRef.current === null,
   });
 
   const fetchMore = useCallback(() => {
@@ -73,18 +94,22 @@ export function useInfiniteFetch<T>(
   }, [apiPath, fetcher]);
 
   useEffect(() => {
+    const initialData = hasInitializedRef.current
+      ? getInitialTimelinePosts<T>(apiPath)
+      : initialDataRef.current;
+    hasInitializedRef.current = true;
     setResult(() => ({
-      data: [],
+      data: initialData ?? [],
       error: null,
-      isLoading: apiPath !== "",
+      isLoading: apiPath !== "" && initialData === null,
     }));
     internalRef.current = {
-      hasMore: apiPath !== "",
+      hasMore: apiPath !== "" && ((initialData?.length ?? 0) >= LIMIT || initialData === null),
       isLoading: false,
-      offset: 0,
+      offset: initialData?.length ?? 0,
     };
 
-    if (apiPath !== "") {
+    if (apiPath !== "" && initialData === null) {
       fetchMore();
     }
   }, [apiPath, fetchMore]);

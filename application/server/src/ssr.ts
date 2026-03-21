@@ -28,6 +28,61 @@ function formatDateJa(value: string | number | Date): string {
   return date ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "long" }).format(date) : "";
 }
 
+function serializeJsonForInlineScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replaceAll("<", "\\u003c")
+    .replaceAll("\u2028", "\\u2028")
+    .replaceAll("\u2029", "\\u2029");
+}
+
+function toTimelinePostPayload(post: Post): {
+  createdAt: string;
+  id: string;
+  images: Array<{ alt: string; id: string }>;
+  movie: { id: string } | null;
+  sound: { artist: string; id: string; title: string } | null;
+  text: string;
+  user: {
+    id: string;
+    name: string;
+    profileImage: { alt: string; id: string };
+    username: string;
+  };
+} {
+  const json = post.toJSON() as unknown as {
+    createdAt: string;
+    id: string;
+    images?: Array<{ alt: string; id: string }>;
+    movie?: { id: string } | null;
+    sound?: { artist: string; id: string; title: string } | null;
+    text: string;
+    user: {
+      id: string;
+      name: string;
+      profileImage: { alt: string; id: string };
+      username: string;
+    };
+  };
+
+  return {
+    createdAt: json.createdAt,
+    id: json.id,
+    images: json.images?.map((image) => ({ alt: image.alt, id: image.id })) ?? [],
+    movie: json.movie != null ? { id: json.movie.id } : null,
+    sound:
+      json.sound != null
+        ? { artist: json.sound.artist, id: json.sound.id, title: json.sound.title }
+        : null,
+    text: json.text,
+    user: {
+      id: json.user.id,
+      name: json.user.name,
+      profileImage: { alt: json.user.profileImage.alt, id: json.user.profileImage.id },
+      username: json.user.username,
+    },
+  };
+}
+
 function renderLoadingShell(pathname: string): string {
   const heading = pathname.startsWith("/crok") ? "Crok" : "CaX";
   return `<main class="mx-auto max-w-2xl px-4 py-6"><h1 class="text-cax-text text-2xl font-bold">${heading}</h1><p class="text-cax-text-muted mt-2 text-sm">Loading...</p></main>`;
@@ -40,6 +95,7 @@ export async function renderAppShell(pathname: string): Promise<string> {
 
   try {
     const posts = await Post.findAll({ limit: 30, offset: 0 });
+    const initialTimelineData = posts.map(toTimelinePostPayload);
     const items = posts
       .map((post) => {
         const json = post.toJSON() as unknown as {
@@ -71,7 +127,7 @@ export async function renderAppShell(pathname: string): Promise<string> {
         ? items
         : '<p class="text-cax-text-muted mt-2 text-sm">投稿がまだありません。</p>';
 
-    return `<main class="mx-auto max-w-2xl px-4 py-6"><h1 class="text-cax-text text-2xl font-bold">CaX</h1><section class="mt-4">${content}</section></main>`;
+    return `<main class="mx-auto max-w-2xl px-4 py-6"><h1 class="text-cax-text text-2xl font-bold">CaX</h1><section class="mt-4">${content}</section></main><script>window.__INITIAL_TIMELINE_POSTS__=${serializeJsonForInlineScript(initialTimelineData)};</script>`;
   } catch {
     return renderLoadingShell(pathname);
   }
