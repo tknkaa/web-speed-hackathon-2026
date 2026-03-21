@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 import { Router } from "express";
@@ -14,7 +13,6 @@ export const crokRouter = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const response = fs.readFileSync(path.join(__dirname, "crok-response.md"), "utf-8");
 const STREAM_CHUNK_SIZE = 64;
-const STREAM_CHUNK_DELAY_MS = 20;
 
 const chunkStreamText = (text: string): string[] => {
   const chunks: string[] = [];
@@ -86,7 +84,6 @@ crokRouter.get("/crok", async (req, res) => {
 
     const data = JSON.stringify({ text: chunk, done: false });
     res.write(`event: message\nid: ${messageId++}\ndata: ${data}\n\n`);
-    await setTimeout(STREAM_CHUNK_DELAY_MS);
   }
 
   if (!res.closed) {

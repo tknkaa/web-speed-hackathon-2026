@@ -1,6 +1,5 @@
 import { Router } from "express";
 import httpErrors from "http-errors";
-import { setTimeout } from "node:timers/promises";
 import { col, where, Op } from "sequelize";
 
 import { eventhub } from "@web-speed-hackathon-2026/server/src/eventhub";
@@ -13,7 +12,6 @@ import {
 export const directMessageRouter = Router();
 const DEFAULT_DM_MESSAGES_LIMIT = 50;
 const MAX_DM_MESSAGES_LIMIT = 200;
-const DM_SEND_RESPONSE_DELAY_MS = 20;
 
 directMessageRouter.get("/dm", async (req, res) => {
   if (req.session.userId === undefined) {
@@ -233,7 +231,6 @@ directMessageRouter.post("/dm/:conversationId/messages", async (req, res) => {
     senderId: req.session.userId,
   });
   await message.reload();
-  await setTimeout(DM_SEND_RESPONSE_DELAY_MS);
 
   return res.status(201).type("application/json").send(message);
 });
