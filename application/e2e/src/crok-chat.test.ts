@@ -60,6 +60,9 @@ test.describe("Crok AIチャット", () => {
     await expect(page.getByText("AIが応答を生成中...")).toBeVisible({
       timeout: 10_000,
     });
+    await expect(page.getByRole("status", { name: "応答中" })).toBeVisible({
+      timeout: 10_000,
+    });
 
     // SSE完了を待つ（フッターテキストが変わる）
     await expect(page.getByText("Crok AIは間違いを起こす可能性があります。")).toBeVisible({

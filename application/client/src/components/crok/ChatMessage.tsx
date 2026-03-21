@@ -66,7 +66,9 @@ const AssistantMessage = ({
       <div className="min-w-0 flex-1">
         <div className="text-cax-text mb-1 text-sm font-medium">Crok</div>
         <div className="markdown text-cax-text max-w-none">
-          {streaming ? (
+          {streaming && !content ? (
+            <TypingIndicator />
+          ) : streaming ? (
             <pre ref={streamingTextRef} className="whitespace-pre-wrap">
               {content}
             </pre>
