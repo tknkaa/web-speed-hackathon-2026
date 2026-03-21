@@ -5,74 +5,53 @@ interface ParsedData {
   peaks: number[];
 }
 
-type DecodingAudioContext = {
-  decodeAudioData(audioData: ArrayBuffer): Promise<AudioBuffer>;
-  close(): Promise<void>;
-};
-
-async function createAudioContext(): Promise<DecodingAudioContext> {
-  const webAudioWindow = window as Window & {
-    webkitAudioContext?: typeof AudioContext;
-  };
-
-  const NativeAudioContext = window.AudioContext ?? webAudioWindow.webkitAudioContext;
-  if (NativeAudioContext != null) {
-    return new NativeAudioContext();
-  }
-
-  const { AudioContext: StandardizedAudioContext } = await import("standardized-audio-context");
-  return new StandardizedAudioContext();
-}
-
-async function calculate(data: ArrayBuffer): Promise<ParsedData> {
-  const audioCtx = await createAudioContext();
-
-  // 音声をデコードする
-  const buffer = await audioCtx.decodeAudioData(data.slice(0));
-  // 左の音声データの絶対値を取る
-  const leftData = Array.from(buffer.getChannelData(0), Math.abs);
-  // 右の音声データの絶対値を取る
-  const rightData = Array.from(buffer.getChannelData(1), Math.abs);
-
-  // 左右の音声データの平均を取る
-  const normalized = leftData.map((left, index) => {
-    const right = rightData[index] ?? 0;
-    return (left + right) / 2;
-  });
-  // 100 個の chunk に分ける
-  const chunkSize = Math.ceil(normalized.length / 100);
-  const chunks: number[][] = [];
-  for (let i = 0; i < normalized.length; i += chunkSize) {
-    chunks.push(normalized.slice(i, i + chunkSize));
-  }
-  // chunk ごとに平均を取る
-  const peaks = chunks.map((chunk) => {
-    const sum = chunk.reduce((acc, value) => acc + value, 0);
-    return chunk.length === 0 ? 0 : sum / chunk.length;
-  });
-  // chunk の平均の中から最大値を取る
-  const max = peaks.reduce((acc, value) => (value > acc ? value : acc), 0);
-
-  await audioCtx.close();
-
-  return { max, peaks };
-}
-
 interface Props {
   soundData: ArrayBuffer;
 }
 
 export const SoundWaveSVG = ({ soundData }: Props) => {
   const uniqueIdRef = useRef(Math.random().toString(16));
+  const workerRef = useRef<Worker | null>(null);
+  const requestIdRef = useRef(0);
   const [{ max, peaks }, setPeaks] = useState<ParsedData>({
     max: 0,
     peaks: [],
   });
 
   useEffect(() => {
-    calculate(soundData).then(({ max, peaks }) => {
-      setPeaks({ max, peaks });
-    });
+    const worker = new Worker(
+      new URL("./sound_wave.worker.ts", import.meta.url),
+      { type: "module" },
+    );
+    workerRef.current = worker;
+    return () => {
+      worker.terminate();
+      workerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (workerRef.current === null) {
+      return;
+    }
+    setPeaks({ max: 0, peaks: [] });
+
+    const worker = workerRef.current;
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
+    const handleMessage = (ev: MessageEvent<{ requestId: number; data: ParsedData }>) => {
+      if (ev.data.requestId === requestId) {
+        setPeaks(ev.data.data);
+      }
+    };
+    worker.addEventListener("message", handleMessage);
+
+    const transferableData = soundData.slice(0);
+    worker.postMessage({ requestId, soundData: transferableData }, [transferableData]);
+    return () => {
+      worker.removeEventListener("message", handleMessage);
+    };
   }, [soundData]);
 
   return (

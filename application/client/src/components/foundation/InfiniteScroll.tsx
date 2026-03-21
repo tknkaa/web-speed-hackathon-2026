@@ -10,9 +10,11 @@ export const InfiniteScroll = ({ children, fetchMore, items }: Props) => {
   const latestItem = items[items.length - 1];
 
   const prevReachedRef = useRef(false);
+  const rafIdRef = useRef<number | null>(null);
+  const scheduledRef = useRef(false);
 
   useEffect(() => {
-    const handler = () => {
+    const check = () => {
       const hasReached =
         window.innerHeight + Math.ceil(window.scrollY) >= document.body.offsetHeight;
 
@@ -27,18 +29,34 @@ export const InfiniteScroll = ({ children, fetchMore, items }: Props) => {
       prevReachedRef.current = hasReached;
     };
 
+    const handler = () => {
+      if (scheduledRef.current) {
+        return;
+      }
+      scheduledRef.current = true;
+      rafIdRef.current = window.requestAnimationFrame(() => {
+        scheduledRef.current = false;
+        rafIdRef.current = null;
+        check();
+      });
+    };
+
     // 最初は実行されないので手動で呼び出す
     prevReachedRef.current = false;
-    handler();
+    check();
 
     document.addEventListener("wheel", handler, { passive: true });
     document.addEventListener("touchmove", handler, { passive: true });
-    document.addEventListener("resize", handler, { passive: true });
+    window.addEventListener("resize", handler, { passive: true });
     document.addEventListener("scroll", handler, { passive: true });
     return () => {
+      if (rafIdRef.current !== null) {
+        window.cancelAnimationFrame(rafIdRef.current);
+      }
+      scheduledRef.current = false;
       document.removeEventListener("wheel", handler);
       document.removeEventListener("touchmove", handler);
-      document.removeEventListener("resize", handler);
+      window.removeEventListener("resize", handler);
       document.removeEventListener("scroll", handler);
     };
   }, [latestItem, fetchMore]);

@@ -11,6 +11,9 @@ export default defineConfig({
     outDir: "../../dist",
     emptyOutDir: true,
   },
+  worker: {
+    format: "es",
+  },
   define: {
     "process.env": JSON.stringify({
       BUILD_DATE: new Date().toISOString(),
