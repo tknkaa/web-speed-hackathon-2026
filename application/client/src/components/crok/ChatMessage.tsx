@@ -38,7 +38,6 @@ const AssistantMessage = ({ content, streaming }: { content: string; streaming: 
             ) : (
               <Markdown
                 components={{ pre: CodeBlock }}
-                key={content}
                 rehypePlugins={[rehypeKatex]}
                 remarkPlugins={[remarkMath, remarkGfm]}
               >
